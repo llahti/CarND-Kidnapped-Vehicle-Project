@@ -73,6 +73,39 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
+  // Initialize random number generator to generator numbers from random distribution
+  // http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::normal_distribution<> g_x(0, std_pos[0]);
+  std::normal_distribution<> g_y(0, std_pos[1]);
+  std::normal_distribution<> g_t(0, std_pos[2]);
+
+  double v_per_yr = velocity / yaw_rate;
+  double yr_dt = yaw_rate * delta_t;
+
+  for (auto p: particles) {
+    // print out particle coordinates
+    if (false) {
+      std::cout << "[" << p.id << "]";
+      std::cout <<" x:" << p.x << " y: " << p.y << " theta: " << p.theta << " weight: " << p.weight << std::endl;
+      }
+    // 1. Predict new values
+    p.x = p.x + v_per_yr * (sin(p.theta+yr_dt)-sin(p.theta));
+    p.y = p.y + v_per_yr * (cos(p.theta) - cos(p.theta+yr_dt));
+    p.theta = p.theta + yr_dt;
+    // 2. Add noise to predicted values
+    p.x += g_x(gen);
+    p.y += g_y(gen);
+    p.theta += g_t(gen);
+
+    // print out particle coordinates
+    if (false) {
+      std::cout << "[" << p.id << "]";
+      std::cout <<" x:" << p.x << " y: " << p.y << " theta: " << p.theta << " weight: " << p.weight << std::endl;
+      }
+    }
+
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
