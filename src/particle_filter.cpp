@@ -14,17 +14,57 @@
 #include <sstream>
 #include <string>
 #include <iterator>
+#include <random>
 
 #include "particle_filter.h"
 
 using namespace std;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
-	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
-	// Add random Gaussian noise to each particle.
-	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
+  // Initialize random number generator to generator numbers from random distribution
+  // http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::normal_distribution<> g_x(0, std[0]);
+  std::normal_distribution<> g_y(0, std[1]);
+  std::normal_distribution<> g_t(0, std[2]);
 
+  std::cout << "Initializing particle filter with estimated coordinates x: "<< x << " y: " << y << " theta: " << theta << std::endl;
+
+  // clear particle and weights vector
+  particles.clear();
+  weights.clear();
+
+  // Set the number of particles.
+  num_particles = 10;
+
+
+  // Initialize all particles to first position (based on estimates of
+  //   x, y, theta and their uncertainties from GPS) and all weights to 1.
+  // Add random Gaussian noise to each particle.
+  const double w = 1;
+  for (int i = 0; i < num_particles; i++) {
+      Particle p;
+      p.id = i;
+      p.x = x + g_x(gen);
+      p.y = y + g_y(gen);
+      p.theta = theta + g_t(gen);
+      p.weight = w;
+      particles.push_back(p);
+      weights.push_back(w);
+    }
+
+  // print out particle coordinates
+  if (false) {
+      std::cout << "Initialized particles with random gaussian noise" << std::endl;
+      for (auto p : particles) {
+          std::cout << "[" << p.id << "]";
+          std::cout <<" x:" << p.x << " y: " << p.y << " theta: " << p.theta << " weight: " << p.weight << std::endl;
+        }
+    }
+
+  is_initialized = true;
+  std::cout << "Particle filter initialized!" << std::endl;
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {

@@ -42,6 +42,7 @@ int main()
 	  cout << "Error: Could not open map file" << endl;
 	  return -1;
   }
+  cout << "Map Loaded from ../data/map_data.txt" << endl;
 
   // Create particle filter
   ParticleFilter pf;
