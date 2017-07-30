@@ -68,11 +68,10 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
-	// TODO: Add measurements to each particle and add random Gaussian noise.
-	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
-	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-	//  http://www.cplusplus.com/reference/random/default_random_engine/
-
+  // NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
+  //  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
+  //  http://www.cplusplus.com/reference/random/default_random_engine/
+  //
   // Initialize random number generator to generator numbers from random distribution
   // http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
   std::random_device rd;
@@ -84,13 +83,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   double v_per_yr = velocity / yaw_rate;
   double yr_dt = yaw_rate * delta_t;
 
+  // Predict particles new position by using velocity and yaw_rate measurements
+  // and then add random Gaussian noise.
   for (auto p: particles) {
     // print out particle coordinates
     if (false) {
       std::cout << "[" << p.id << "]";
       std::cout <<" x:" << p.x << " y: " << p.y << " theta: " << p.theta << " weight: " << p.weight << std::endl;
       }
-    // 1. Predict new values
+    // 1. Predict new position and angle
     p.x = p.x + v_per_yr * (sin(p.theta+yr_dt)-sin(p.theta));
     p.y = p.y + v_per_yr * (cos(p.theta) - cos(p.theta+yr_dt));
     p.theta = p.theta + yr_dt;
