@@ -59,7 +59,8 @@ public:
 	 * @param std[] Array of dimension 3 [standard deviation of x [m], standard deviation of y [m]
 	 *   standard deviation of yaw [rad]]
 	 */
-	void init(double x, double y, double theta, double std[]);
+	void init(const double x, const double y,
+		  const double theta, const double std[]);
 
 	/**
 	 * prediction Predicts the state for the next time step
@@ -70,15 +71,16 @@ public:
 	 * @param velocity Velocity of car from t to t+1 [m/s]
 	 * @param yaw_rate Yaw rate of car from t to t+1 [rad/s]
 	 */
-	void prediction(double delta_t, double std_pos[], double velocity, double yaw_rate);
+	void prediction(const double delta_t, const double std_pos[],
+			const double velocity, const double yaw_rate);
 	
 	/**
 	 * dataAssociation Finds which observations correspond to which landmarks (likely by using
 	 *   a nearest-neighbors data association).
 	 * @param predicted Vector of predicted landmark observations
-	 * @param observations Vector of landmark observations
+	 * @param observations Vector of measured? landmark observations
 	 */
-	void dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations);
+	void dataAssociation(const std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations);
 	
 	/**
 	 * updateWeights Updates the weights for each particle based on the likelihood of the 
@@ -89,8 +91,8 @@ public:
 	 * @param observations Vector of landmark observations
 	 * @param map Map class containing map landmarks
 	 */
-	void updateWeights(double sensor_range, double std_landmark[], std::vector<LandmarkObs> observations,
-			Map map_landmarks);
+	void updateWeights(const double sensor_range, const double std_landmark[],
+			   const std::vector<LandmarkObs> observations, const Map map_landmarks);
 	
 	/**
 	 * resample Resamples from the updated set of particles to form
@@ -113,6 +115,31 @@ public:
 	 */
 	const bool initialized() const {
 		return is_initialized;
+	}
+
+	/**
+	 * @brief transform transforms given coordites
+	 * @param obs landmark observation from car's coordinate system
+	 * @param p particle coordinates and angle to which given observation is transformed (note that struct is type of ground_truth)
+	 * @param x_g transformed x-coordinate (in global map coordinates)
+	 * @param y_g transformed y-coordinate (in global map coordinates)
+	 */
+	//inline void transform(const LandmarkObs& obs, const ground_truth& p, double& x_t, double& y_t) {
+	inline void transform(const std::vector<LandmarkObs>& observations,
+			      const Particle& p,
+			      std::vector<LandmarkObs>& transformation) {
+	  for (int i = 0; i < observations.size(); i++) {
+	    const double x = observations[i].x;
+	    const double y = observations[i].y;
+	    const double xt = p.x;
+	    const double yt = p.y;
+	    const double theta = p.theta;
+	    // Preserve observation id in transformed coordinates
+	    transformation[i].id = observations[i].id;
+	    transformation[i].x = (x * cos(theta)) - (y * sin(theta)) + xt;
+	    transformation[i].y = (x * sin(theta)) + (y * cos(theta)) + yt;
+	  }
+	  // std::cout << "Transformed x: " << obs.x << " y: " << obs.y << std::endl;
 	}
 };
 
